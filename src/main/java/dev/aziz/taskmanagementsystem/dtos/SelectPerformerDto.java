@@ -19,5 +19,5 @@ public class SelectPerformerDto {
     private Long newPerformer;
 
     @NotNull
-    private Long task;
+    private Long taskId;
 }

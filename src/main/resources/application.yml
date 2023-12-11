@@ -1,32 +1,45 @@
 server:
   port: 2233
 
-#security.jwt.token.secret-key: my-secret-key
-#security:
 jwt:
   secret: aziz-secret-key
   lifetime: 30m
 
 
 spring:
+  profiles:
+    active: ${ACTIVE_PROFILE:dev}
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/task-system
-    username: postgres
-    password: 1234
+    url: jdbc:postgresql://localhost:5433/task_db
+    username: azizdev
+    password: pass_sql
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create-drop
   mvc:
     log-request-details: true
-
-#logging:
-#  level:
-#    org.springframework.web: debug
-#    org.hibernate.SQL: INFO
-#  file:
-#    name: D:/Aziz/jobs/EffectiveMobile/December/myapp.log
+  mail:
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT}
+    username: ${EMAIL_ID}
+    password: ${EMAIL_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        mime:
+          charset: UTF
+        smtp:
+          writetimeout: 10000
+          connectiontimeout: 10000
+          timeout: 10000
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    verify:
+      host: ${VERIFY_EMAIL_HOST}
 
 logging:
   level:

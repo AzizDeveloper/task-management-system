@@ -14,17 +14,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-//    @Query(nativeQuery = true,
-//            value = "SELECT movie.title\n" +
-//                    "FROM movie\n" +
-//                    "LEFT JOIN movie_main_actors ON movie.id = movie_main_actors.movie_id\n" +
-//                    "LEFT JOIN actor ON movie_main_actors.actor_id = actor.id\n" +
-//                    "LEFT JOIN movie_directors ON movie.id = movie_directors.movie_id\n" +
-//                    "LEFT JOIN director ON movie_directors.director_id = director.id\n" +
-//                    "WHERE actor.first_name ILIKE CONCAT('%', :name, '%') OR actor.last_name ILIKE CONCAT('%', :name, '%') \n" +
-//                    "OR director.first_name ILIKE CONCAT('%', :name, '%') OR director.last_name  ILIKE CONCAT('%', :name, '%');"
-//    )
-//    Page<String> searchMoviesWithThePerson(@Param("name") String name, PageRequest pageRequest);
+    Optional<User> findByEmailIgnoreCase(String email);
+    Boolean existsByEmail(String email);
 
-//    Page<User> findUserById(Long id, PageRequest pageRequest);
 }

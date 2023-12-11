@@ -22,6 +22,7 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String email;
+    private Boolean isEnabled;
     private String token;
     private Set<Role> roles = new HashSet<>();
     private List<Task> tasks = new ArrayList<>();

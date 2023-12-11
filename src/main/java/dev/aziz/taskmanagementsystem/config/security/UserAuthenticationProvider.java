@@ -43,20 +43,21 @@ public class UserAuthenticationProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String createToken(UserDto user) {
+    public String createToken(UserDto userDto) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + 3600000); // 1 hour
 
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
 
-        List<String> roles = user.getRoles().stream().map(Role::getName).toList();
+        List<String> roles = userDto.getRoles().stream().map(Role::getName).toList();
 
         return JWT.create()
-                .withSubject(user.getEmail())
+                .withSubject(userDto.getEmail())
                 .withIssuedAt(now)
                 .withExpiresAt(validity)
-                .withClaim("firstName", user.getFirstName())
-                .withClaim("lastName", user.getLastName())
+                .withClaim("firstName", userDto.getFirstName())
+                .withClaim("lastName", userDto.getLastName())
+                .withClaim("isEnabled", userDto.getIsEnabled())
                 .withClaim("roles", roles)
                 .sign(algorithm);
     }
@@ -69,23 +70,27 @@ public class UserAuthenticationProvider {
 
         DecodedJWT decoded = verifier.verify(token);
 
-//        List<Claim> roles = decoded.getClaim("roles");
         List<String> rolesNames = decoded.getClaim("roles").asList(String.class);
 
         Set<Role> roles = rolesNames.stream()
                 .map(roleName -> roleRepository.findByName(roleName)
                         .orElseThrow(() -> new AppException("Role not found.", HttpStatus.NOT_FOUND)))
-//                /* retrieve Role object by roleName from your database */
                 .collect(Collectors.toSet());
-
-//TODO here are some mess
 
         UserDto user = UserDto.builder()
                 .email(decoded.getSubject())
                 .firstName(decoded.getClaim("firstName").asString())
                 .lastName(decoded.getClaim("lastName").asString())
+                .isEnabled(decoded.getClaim("isEnabled").asBoolean())
                 .roles(roles)
                 .build();
+
+        if (!user.getIsEnabled()) {
+            System.out.println("validateToken");
+            System.out.println("user.isEnabled():" + user.getIsEnabled());
+            System.out.println(user);
+            throw new AppException("Verify your email:" + user.getEmail(), HttpStatus.FORBIDDEN);
+        }
 
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
@@ -93,34 +98,6 @@ public class UserAuthenticationProvider {
 
         return new UsernamePasswordAuthenticationToken(user, null, authorities);
     }
-
-//    public Authentication validateToken(String token) {
-//        Algorithm algorithm = Algorithm.HMAC256(secretKey);
-//
-//        JWTVerifier verifier = JWT.require(algorithm)
-//                .build();
-//
-//        DecodedJWT decoded = verifier.verify(token);
-//
-//        List<String> roleNames = decoded.getClaim("roles").asList(String.class);
-//
-//        Set<Role> roles = roleNames.stream()
-//                .map(roleName -> /* retrieve Role object by roleName from your database */)
-//                .collect(Collectors.toSet());
-//
-//        UserDto user = UserDto.builder()
-//                .email(decoded.getSubject())
-//                .firstName(decoded.getClaim("firstName").asString())
-//                .lastName(decoded.getClaim("lastName").asString())
-//                .roles(roles)
-//                .build();
-//
-//        List<GrantedAuthority> authorities = roles.stream()
-//                .map(role -> new SimpleGrantedAuthority(role.getName()))
-//                .collect(Collectors.toList());
-//
-//        return new UsernamePasswordAuthenticationToken(user, null, authorities);
-//    }
 
     public Authentication validateTokenStrongly(String token) {
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
@@ -131,6 +108,13 @@ public class UserAuthenticationProvider {
         DecodedJWT decoded = verifier.verify(token);
 
         UserDto user = userService.findByLogin(decoded.getSubject());
+
+        if (!user.getIsEnabled()) {
+            System.out.println("validateTokenStrongly");
+            System.out.println("user.isEnabled():" + user.getIsEnabled());
+            System.out.println(user);
+            throw new AppException("Verify your email:" + user.getEmail(), HttpStatus.FORBIDDEN);
+        }
 
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))

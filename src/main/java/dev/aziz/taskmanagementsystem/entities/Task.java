@@ -2,6 +2,8 @@ package dev.aziz.taskmanagementsystem.entities;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +12,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,10 +35,12 @@ public class Task {
     @NotBlank(message = "Title should not be empty")
     private String title;
 
-    @NotBlank(message = "Status should not be empty")
+    @NotNull(message = "Status should not be empty")
+    @Enumerated(EnumType.STRING)
     private Status status;
 
-    @NotBlank(message = "Priority should not be empty")
+    @NotNull(message = "Priority should not be empty")
+    @Enumerated(EnumType.STRING)
     private Priority priority;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
